@@ -66,6 +66,8 @@ When your ass needs to be saved:
 <br>- Бэкграундная музыка.
 <br>- Эффекты на события.
 <br>- Ачивки и история игры.
+<br>- display on Form1 score lable and other usefull stuff.
+<br>- Random question Selection 
 
 <h3>🚀 Backlog (Future Stuff)</h3>
 - Question Database Integration (только хардкор!).
@@ -73,5 +75,6 @@ When your ass needs to be saved:
 <br>- Multiplayer: быстрее всех жмите красную кнопку!
 <br>- Сложность ответов.
 <br>- Рандомизация ответов.
+<br>- Error handlers 
 
 
