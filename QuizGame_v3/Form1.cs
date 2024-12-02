@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,6 +17,7 @@ namespace QuizGame_v3
         private PlayerStats playerStats;
         private int currentQuestionIndex;
         private int score;
+        private int earnings;
         private int correctAnswersInARow;
         public Form1()
         {
@@ -29,6 +30,7 @@ namespace QuizGame_v3
             playerStats = new PlayerStats();
             currentQuestionIndex = 0;
             score = 0;
+            earnings = 0;
             correctAnswersInARow = 0;
             questions = new List<Question>() {
                 new Question("Which SQL statement is used to retrieve data from a database?", new[] { "UPDATE", "INSERT", "DELETE", "SELECT" }, 3),
@@ -38,7 +40,7 @@ namespace QuizGame_v3
                 new Question("What is the primary purpose of a database index in MySQL?", new[] { "To encrypt data", "To store backup data", "To speed up data retrieval", "To connect databases" }, 2),
                 new Question("In the James Bond series, what is Bond's code number?", new[] { "700", "007", "777", "070" }, 1),
                 new Question("Name Ishan's favourite wine", new[] { "Zinfandel", "Montepulciano", "Syrah", "Pinot noir" }, 0),
-                new Question("Name a guy from 'Game of Thrones'", new[] { "Aragorn, son of Arathorn", "Walter White", "Jon Snow", "Jane Eyre" }, 0),
+                new Question("Name a guy from 'Game of Thrones'", new[] { "Aragorn, son of Arathorn", "Walter White", "Jon Snow", "Jane Eyre" }, 2),
                 new Question("What is the return type of the 'Main' method in C#?", new[] { "int", "void", "string", "bool" }, 1),
                 new Question("Who is the author of 'War and Peace'?", new[] { "Aleksandr Solzhenitsyn", "Fyodor Dostoevsky", "Leo Tolstoy", "Mikhail Bulgakov" }, 2),
                 new Question("What is the primary feature of the 'WHERE' in SQL?", new[] { "Filtering rows", "Sorting rows", "Filtering grouped data", "Sorting grouped data" }, 0),
@@ -69,12 +71,14 @@ namespace QuizGame_v3
                 new Badge("Cheater","You can't know it all","images/cheater.png"), //for answering 10 questions without loosing
             };
 
+
+            ShuffleQuestions(); // todo: remember answered questions to avoid reapetitions
             DisplayQuestion();
         }
 
         private void DisplayQuestion()
         {
-            if (currentQuestionIndex < questions.Count)
+            if (currentQuestionIndex < 6) // todo: end game if wring aswer given
             {
                 var question  = questions[currentQuestionIndex];
                 lblQuestion.Text = question.QuestionText;
@@ -85,8 +89,11 @@ namespace QuizGame_v3
             }
             else
             {
-                MessageBox.Show("No more questions. Your a fu%king genius!");
-                Application.Exit();
+                // disable btnOptions
+                btnOption1.Enabled = false;
+                btnOption2.Enabled = false;
+                btnOption3.Enabled = false;
+                btnOption4.Enabled = false;
             }
 
         }
@@ -106,7 +113,19 @@ namespace QuizGame_v3
             {
                 correctAnswersInARow++;
                 score += 1; // todo: make more complex logic
-                if (correctAnswersInARow == 7)
+                if (correctAnswersInARow > 4)
+                {
+                    earnings += 250;
+                } else if (correctAnswersInARow > 6)
+                {
+                    earnings += 1000;
+                } else
+                {
+                    earnings += 2000;
+                }
+
+
+                    if (correctAnswersInARow == 7)
                 {
                     MessageBox.Show($"You win $5000. Damn good!");
                     UpdatePlayerStats(true, 5000);
@@ -117,7 +136,8 @@ namespace QuizGame_v3
             }
             else
             {
-                MessageBox.Show("Ouch.. Wrong answer. You can do better!");
+                MessageBox.Show($"Ouch.. Wrong answer. You can do better!! \nYour Total Score: {score}\nQuestions Answered Correctly: {correctAnswersInARow}");
+                lblQuestion.Text = "Game ended. Click 'Start Game' to play again!";
                 UpdatePlayerStats(false, 0);
             }
         }
@@ -146,8 +166,8 @@ namespace QuizGame_v3
             if (correctAnswersInARow >= 10) badges.Find(b => b.Title == "Cheater").IsEarned = true;
 
 
-            ShowBadges();
             MessageBox.Show($"Stats are updated. Total Games Played: {playerStats.TotalGamesPlayed};\nTotal Earnings: {playerStats.TotalEarnings}");
+            lblQuestion.Text = "Game ended. Click 'Start Game' to play again!";
         }
 
         private void ShowBadges()
@@ -166,6 +186,45 @@ namespace QuizGame_v3
             badgeForm.ShowDialog(); // Use ShowDialog to display as a modal dialog
         }
 
+        private void ShuffleQuestions() // todo: control random by difficulty lvls
+        {
+            Random random = new Random();
+            questions = questions.OrderBy(qst => random.Next()).ToList();
+        }
 
+        private void btnGameStart_Click(object sender, EventArgs e)
+        {
+            playerStats = new PlayerStats();
+            currentQuestionIndex = 0;
+            score = 0;
+            correctAnswersInARow = 0;
+
+            ShuffleQuestions();
+            DisplayQuestion();
+
+            MessageBox.Show("New game started!");
+
+            btnOption1.Enabled = true;
+            btnOption2.Enabled = true;
+            btnOption3.Enabled = true;
+            btnOption4.Enabled = true;
+        }
+
+        private void btnGameEnd_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Are you sure you want to end the game?", "End Game", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                UpdatePlayerStats(false, score);
+                MessageBox.Show($"Game Over! \nYour Total Score: {score}\nQuestions Answered Correctly: {correctAnswersInARow}");
+
+                btnOption1.Enabled = false;
+                btnOption2.Enabled = false;
+                btnOption3.Enabled = false;
+                btnOption4.Enabled = false;
+
+                lblQuestion.Text = "Game ended. Click 'Start Game' to play again!";
+            }
+        }
     }
 }
